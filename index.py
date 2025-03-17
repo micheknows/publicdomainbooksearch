@@ -46,35 +46,41 @@ def initialize_db():
 # Fetch books from Gutenberg and store in database
 @app.get("/fetch_books")
 def fetch_books():
-    response = requests.get("https://gutendex.com/books/")
-    if response.status_code != 200:
-        return {"error": "Failed to fetch books"}
+    try:
 
-    books = response.json().get("results", [])
+        response = requests.get("https://gutendex.com/books/")
+        if response.status_code != 200:
+                logging.error("Failed to fetch books: %s", response.status_code)
+                return {"error": "Failed to fetch books"}
 
-    conn = get_db_connection()
-    cur = conn.cursor()
+        books = response.json().get("results", [])
 
-    for book in books:
-        gutenberg_id = book.get("id")
-        title = book.get("title")
-        author = book["authors"][0]["name"] if book["authors"] else "Unknown"
-        subjects = book.get("subjects", [])
-        bookshelves = book.get("bookshelves", [])
-        languages = book.get("languages", [])
-        download_count = book.get("download_count", 0)
-        gutenberg_link = book["formats"].get("text/html", "")
+        conn = get_db_connection()
+        cur = conn.cursor()
 
-        # Insert data into the database
-        cur.execute("""
-            INSERT INTO books (gutenberg_id, title, author, subjects, bookshelves, languages, download_count, gutenberg_link)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
-            ON CONFLICT (gutenberg_id) DO NOTHING
-        """, (gutenberg_id, title, author, subjects, bookshelves, languages, download_count, gutenberg_link))
+        for book in books:
+            gutenberg_id = book.get("id")
+            title = book.get("title")
+            author = book["authors"][0]["name"] if book["authors"] else "Unknown"
+            subjects = book.get("subjects", [])
+            bookshelves = book.get("bookshelves", [])
+            languages = book.get("languages", [])
+            download_count = book.get("download_count", 0)
+            gutenberg_link = book["formats"].get("text/html", "")
 
-    conn.commit()
-    cur.close()
-    conn.close()
+            # Insert data into the database
+            cur.execute("""
+                INSERT INTO books (gutenberg_id, title, author, subjects, bookshelves, languages, download_count, gutenberg_link)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                ON CONFLICT (gutenberg_id) DO NOTHING
+            """, (gutenberg_id, title, author, subjects, bookshelves, languages, download_count, gutenberg_link))
+
+        conn.commit()
+        cur.close()
+        conn.close()
+    except Exception as e:
+        logging.error("An error occurred: %s", e)
+        return {"error": str(e)}
 
     return {"message": "Books successfully stored in the database"}
 
