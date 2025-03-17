@@ -36,7 +36,7 @@ def initialize_db():
             author TEXT,
             subjects TEXT[],
             bookshelves TEXT[],
-            languages TEXT[],
+            language TEXT[],
             download_count INTEGER,
             gutenberg_link TEXT
         )
@@ -67,7 +67,7 @@ def fetch_books():
             author = book["authors"][0]["name"] if book["authors"] else "Unknown"
             subjects = book.get("subjects", [])
             bookshelves = book.get("bookshelves", [])
-            language = book.get("languages", [])
+            language = book.get("language", [])
             download_count = book.get("download_count", 0)
             gutenberg_link = book["formats"].get("text/html", "")
 
@@ -76,7 +76,7 @@ def fetch_books():
                 INSERT INTO books (gutenberg_id, title, author, subjects, bookshelves, language, download_count, gutenberg_link)
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
                 ON CONFLICT (gutenberg_id) DO NOTHING
-            """, (gutenberg_id, title, author, subjects, bookshelves, languages, download_count, gutenberg_link))
+            """, (gutenberg_id, title, author, subjects, bookshelves, language, download_count, gutenberg_link))
 
         conn.commit()
         cur.close()
