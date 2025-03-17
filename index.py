@@ -67,13 +67,13 @@ def fetch_books():
             author = book["authors"][0]["name"] if book["authors"] else "Unknown"
             subjects = book.get("subjects", [])
             bookshelves = book.get("bookshelves", [])
-            languages = book.get("languages", [])
+            language = book.get("languages", [])
             download_count = book.get("download_count", 0)
             gutenberg_link = book["formats"].get("text/html", "")
 
             # Insert data into the database
             cur.execute("""
-                INSERT INTO books (gutenberg_id, title, author, subjects, bookshelves, languages, download_count, gutenberg_link)
+                INSERT INTO books (gutenberg_id, title, author, subjects, bookshelves, language, download_count, gutenberg_link)
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
                 ON CONFLICT (gutenberg_id) DO NOTHING
             """, (gutenberg_id, title, author, subjects, bookshelves, languages, download_count, gutenberg_link))
