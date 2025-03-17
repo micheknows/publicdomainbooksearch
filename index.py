@@ -4,8 +4,11 @@ from typing import Optional
 import requests
 import psycopg2
 import os
+import logging
 
 app = FastAPI()
+
+logging.basicConfig(level=logging.INFO)
 
 @app.get("/")
 async def home():
@@ -78,8 +81,17 @@ def fetch_books():
         conn.commit()
         cur.close()
         conn.close()
+        
+    except requests.exceptions.RequestException as req_err:
+        logging.error("HTTP request failed: %s", req_err)
+        return {"error": "External API request failed"}
+
+    except psycopg2.Error as db_err:
+        logging.error("Database error: %s", db_err)
+        return {"error": "Database error occurred"}
+
     except Exception as e:
-        logging.error("An error occurred: %s", e)
+        logging.error("An unexpected error occurred: %s", e)
         return {"error": str(e)}
 
     return {"message": "Books successfully stored in the database"}
