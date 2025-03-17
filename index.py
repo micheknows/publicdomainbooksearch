@@ -14,7 +14,11 @@ async def home():
 
 # Connect to the database
 def get_db_connection():
-    return psycopg2.connect(os.getenv('PUBLICDOMAINBOOKS_DATABASE_URL'), sslmode='require')
+    DATABASE_URL = os.getenv('PUBLICDOMAINBOOKS_DATABASE_URL')
+    if not DATABASE_URL:
+        raise ValueError("Database URL not found in environment variables")
+
+    return psycopg2.connect(DATABASE_URL, sslmode='require')
 
 
 # Initialize database: Create `books` table if not exists
@@ -79,5 +83,6 @@ def fetch_books():
 initialize_db()
 
 if __name__ == "__main__":
+    initialize_db()  # Ensure DB is set up before running
     import uvicorn
-    uvicorn.run(app)
+    uvicorn.run(app, host="0.0.0.0", port=8080)
