@@ -2,7 +2,7 @@ from fastapi import FastAPI, Request
 import asyncio
 from typing import Optional
 import requests
-import psycopg2
+import psycopg2.binary as psycopg2
 import os
 
 app = FastAPI()
